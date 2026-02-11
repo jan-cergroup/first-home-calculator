@@ -40,8 +40,11 @@ Australian first home buyer calculator built with React 19, Vite, TypeScript (st
   - `Calculator.tsx` — Root: two-column layout, wires hook to form + results
   - `CalculatorForm.tsx` — Left column: property, about you, finances, advanced settings sections
   - `CalculatorResults.tsx` — Right column: summary cards, government schemes, cost breakdown, loan summary
-  - `RadioGroup.tsx`, `CurrencyInput.tsx`, `NumberInput.tsx`, `StateSelect.tsx` — Reusable input primitives
-  - `CollapsibleSection.tsx` — Reusable collapsible panel with chevron animation
+  - `SelectInput.tsx` — Generic dropdown (`<select>`) with bottom-border style
+  - `CheckboxInput.tsx` — Custom styled checkbox with accent color
+  - `CurrencyInput.tsx` — Currency input with `$` prefix and bottom-border style
+  - `NumberInput.tsx` — Numeric input with optional suffix (e.g. `%`) and bottom-border style
+  - `CollapsibleSection.tsx` — Collapsible panel with section header styling and accent underline
   - `InfoSection.tsx` — "What is FHOG?" + per-state descriptions
   - `FAQAccordion.tsx` — 4-item expandable FAQ
 - `src/hooks/useCalculator.ts` — Core hook: form state + derived results + generic `updateField` setter
