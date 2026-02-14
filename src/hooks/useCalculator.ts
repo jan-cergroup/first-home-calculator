@@ -12,9 +12,14 @@ export function useCalculator() {
     setFormState(prev => ({ ...prev, [field]: value }))
   }, [])
 
+  const resetForm = useCallback(() => {
+    setFormState(DEFAULT_FORM_STATE)
+  }, [])
+
   return {
     formState,
     results,
     updateField,
+    resetForm,
   }
 }

@@ -14,11 +14,11 @@ export function CollapsibleSection({ title, defaultOpen = false, children }: Col
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 w-full text-left cursor-pointer"
+        className="flex items-center justify-between w-full text-left cursor-pointer group"
       >
-        <h3 className="text-xl text-gray-900">{title}</h3>
+        <h3 className="text-lg font-bold text-gray-900">{title}</h3>
         <svg
-          className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-gray-400 transition-transform group-hover:text-gray-600 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -27,8 +27,7 @@ export function CollapsibleSection({ title, defaultOpen = false, children }: Col
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      <div className="w-8 h-0.5 bg-accent mt-2 mb-6" />
-      {isOpen && <div className="space-y-5">{children}</div>}
+      {isOpen && <div className="space-y-5 mt-5">{children}</div>}
     </div>
   )
 }

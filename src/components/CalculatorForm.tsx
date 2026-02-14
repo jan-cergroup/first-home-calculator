@@ -1,10 +1,10 @@
-import type { FormState, PropertyPurpose, AustralianState, PropertyType, ChildrenCount, BuyerType, LoanTerm } from '../types'
+import type { FormState, PropertyPurpose, AustralianState, PropertyType, ChildrenCount, BuyerType } from '../types'
 import { STATE_FORM_CONFIG, STATE_LOCATION_LABELS, AUSTRALIAN_STATES } from '../types'
-import { SelectInput } from './SelectInput'
 import { CheckboxInput } from './CheckboxInput'
-import { CurrencyInput } from './CurrencyInput'
-import { NumberInput } from './NumberInput'
+import { RadioGroup } from './RadioGroup'
+import { RangeSliderInput } from './RangeSliderInput'
 import { CollapsibleSection } from './CollapsibleSection'
+import { formatCurrency } from '../utils/format'
 
 interface CalculatorFormProps {
   formState: FormState
@@ -16,74 +16,79 @@ export function CalculatorForm({ formState, updateField }: CalculatorFormProps) 
   const locationLabels = STATE_LOCATION_LABELS[formState.state]
 
   return (
-    <div className="space-y-10">
-      {/* Property Details */}
-      <div>
-        <h3 className="text-xl text-gray-900">Property Details</h3>
-        <div className="w-8 h-0.5 bg-accent mt-2 mb-6" />
+    <div className="space-y-8">
+      {/* Property Value Slider */}
+      <RangeSliderInput
+        label="Property value"
+        icon={
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        }
+        value={formState.propertyValue}
+        onChange={(v) => updateField('propertyValue', v)}
+        min={100000}
+        max={2000000}
+        step={10000}
+        formatValue={formatCurrency}
+      />
 
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-            <SelectInput
-              label="State"
-              value={formState.state}
-              options={AUSTRALIAN_STATES.map((s) => ({ value: s.value, label: s.label }))}
-              onChange={(v) => updateField('state', v as AustralianState)}
-            />
-            <SelectInput
-              label="Location"
-              value={formState.isMetro ? 'metro' : 'regional'}
-              options={[
-                { value: 'metro', label: locationLabels.metro },
-                { value: 'regional', label: locationLabels.regional },
-              ]}
-              onChange={(v) => updateField('isMetro', v === 'metro')}
-            />
-          </div>
+      {/* State pills */}
+      <RadioGroup
+        label="State"
+        options={AUSTRALIAN_STATES.map((s) => ({ value: s.value, label: s.label }))}
+        value={formState.state}
+        onChange={(v) => updateField('state', v as AustralianState)}
+      />
 
-          <CurrencyInput
-            label="Property value"
-            value={formState.propertyValue}
-            onChange={(v) => updateField('propertyValue', v)}
-          />
+      {/* Location pills */}
+      <RadioGroup
+        label="Location"
+        options={[
+          { value: 'metro', label: locationLabels.metro },
+          { value: 'regional', label: locationLabels.regional },
+        ]}
+        value={formState.isMetro ? 'metro' : 'regional'}
+        onChange={(v) => updateField('isMetro', v === 'metro')}
+      />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-            <SelectInput
-              label="Property purpose"
-              value={formState.propertyPurpose}
-              options={[
-                { value: 'home', label: 'Home' },
-                { value: 'investment', label: 'Investment' },
-              ]}
-              onChange={(v) => updateField('propertyPurpose', v as PropertyPurpose)}
-            />
-            <SelectInput
-              label="Property type"
-              value={formState.propertyType}
-              options={[
-                { value: 'established', label: 'Established home' },
-                { value: 'newlyConstructed', label: 'Newly constructed' },
-                { value: 'vacantLand', label: 'Vacant land' },
-              ]}
-              onChange={(v) => updateField('propertyType', v as PropertyType)}
-            />
-          </div>
-        </div>
-      </div>
+      {/* Purpose pills */}
+      <RadioGroup
+        label="Purpose"
+        options={[
+          { value: 'home', label: 'Home' },
+          { value: 'investment', label: 'Investment' },
+        ]}
+        value={formState.propertyPurpose}
+        onChange={(v) => updateField('propertyPurpose', v as PropertyPurpose)}
+      />
+
+      {/* Property type pills */}
+      <RadioGroup
+        label="Property type"
+        options={[
+          { value: 'established', label: 'Established' },
+          { value: 'newlyConstructed', label: 'Newly Built' },
+          { value: 'vacantLand', label: 'Vacant Land' },
+        ]}
+        value={formState.propertyType}
+        onChange={(v) => updateField('propertyType', v as PropertyType)}
+      />
+
+      <hr className="border-gray-100" />
 
       {/* About You */}
       <div>
-        <h3 className="text-xl text-gray-900">About You</h3>
-        <div className="w-8 h-0.5 bg-accent mt-2 mb-6" />
+        <h3 className="text-lg font-bold text-gray-900 mb-5">About You</h3>
 
         <div className="space-y-5">
-          <SelectInput
-            label="Buyer type"
-            value={formState.buyerType}
+          <RadioGroup
+            label="Buyer"
             options={[
               { value: 'single', label: 'Single' },
               { value: 'couple', label: 'Couple' },
             ]}
+            value={formState.buyerType}
             onChange={(v) => updateField('buyerType', v as BuyerType)}
           />
 
@@ -112,9 +117,8 @@ export function CalculatorForm({ formState, updateField }: CalculatorFormProps) 
           </div>
 
           {config.showNumberOfChildren && (
-            <SelectInput
+            <RadioGroup
               label="Number of children"
-              value={String(formState.childrenCount)}
               options={[
                 { value: '0', label: '0' },
                 { value: '1', label: '1' },
@@ -123,71 +127,77 @@ export function CalculatorForm({ formState, updateField }: CalculatorFormProps) 
                 { value: '4', label: '4' },
                 { value: '5', label: '5+' },
               ]}
+              value={String(formState.childrenCount)}
               onChange={(v) => updateField('childrenCount', parseInt(v) as ChildrenCount)}
             />
           )}
         </div>
       </div>
 
+      <hr className="border-gray-100" />
+
       {/* Your Finances */}
       <CollapsibleSection title="Your Finances" defaultOpen>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-          <CurrencyInput
+        <div className="space-y-6">
+          <RangeSliderInput
             label="Deposit savings"
+            icon={
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
             value={formState.depositSavings}
             onChange={(v) => updateField('depositSavings', v)}
+            min={0}
+            max={500000}
+            step={5000}
+            formatValue={formatCurrency}
           />
-          <CurrencyInput
-            label="Yearly income"
-            subtitle="gross, all purchasers"
+          <RangeSliderInput
+            label="Yearly income (gross, all purchasers)"
+            icon={
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            }
             value={formState.yearlyIncome}
             onChange={(v) => updateField('yearlyIncome', v)}
+            min={0}
+            max={500000}
+            step={5000}
+            formatValue={formatCurrency}
           />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-          <CurrencyInput
+          <RangeSliderInput
             label="Monthly expenses"
+            icon={
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            }
             value={formState.monthlyExpenses}
             onChange={(v) => updateField('monthlyExpenses', v)}
+            min={0}
+            max={20000}
+            step={100}
+            formatValue={formatCurrency}
           />
-          <CurrencyInput
+          <RangeSliderInput
             label="HECS/HELP debt"
+            icon={
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+              </svg>
+            }
             value={formState.hecsDebt}
             onChange={(v) => updateField('hecsDebt', v)}
+            min={0}
+            max={200000}
+            step={1000}
+            formatValue={formatCurrency}
           />
         </div>
-      </CollapsibleSection>
-
-      {/* Advanced Settings */}
-      <CollapsibleSection title="Advanced Settings">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-          <NumberInput
-            label="Interest rate"
-            value={formState.interestRate}
-            onChange={(v) => updateField('interestRate', v)}
-            suffix="%"
-            min={0.1}
-            max={20}
-            step={0.1}
-          />
-          <SelectInput
-            label="Loan term"
-            value={String(formState.loanTerm)}
-            options={[
-              { value: '15', label: '15 years' },
-              { value: '20', label: '20 years' },
-              { value: '25', label: '25 years' },
-              { value: '30', label: '30 years' },
-            ]}
-            onChange={(v) => updateField('loanTerm', parseInt(v) as LoanTerm)}
-          />
-        </div>
-        <CurrencyInput
-          label="Transaction fees"
-          subtitle="conveyancing, inspections, etc."
-          value={formState.transactionFees}
-          onChange={(v) => updateField('transactionFees', v)}
-        />
       </CollapsibleSection>
     </div>
   )
