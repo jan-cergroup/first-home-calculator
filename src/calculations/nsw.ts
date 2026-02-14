@@ -21,16 +21,27 @@ export const nsw: StateCalculator = {
     const value = inputs.propertyValue
 
     // First Home Buyer Assistance Scheme (FHBAS)
-    // Full exemption for properties up to $800,000 (new or existing)
-    // Sliding scale concession from $800,001 to $1,000,000
+    // Sliding scale: concession = duty_at_exempt_threshold × sliding_factor
+    // Result = full_duty - concession
     if (inputs.isFirstHomeBuyer && inputs.propertyPurpose === 'home') {
-      if (value <= 800000) {
-        return 0
-      }
-      if (value <= 1000000) {
-        const fullDuty = calculateGeneralStampDuty(value)
-        const concessionRate = (1000000 - value) / 200000
-        return roundCurrency(fullDuty * (1 - concessionRate))
+      if (inputs.propertyType === 'vacantLand') {
+        // Vacant land: full exemption up to $350k, sliding scale $350k–$450k
+        if (value <= 350000) return 0
+        if (value <= 450000) {
+          const fullDuty = calculateGeneralStampDuty(value)
+          const exemptDuty = calculateGeneralStampDuty(350000)
+          const slidingFactor = (450000 - value) / 100000
+          return roundCurrency(fullDuty - exemptDuty * slidingFactor)
+        }
+      } else {
+        // New/established homes: full exemption up to $800k, sliding scale $800k–$1M
+        if (value <= 800000) return 0
+        if (value <= 1000000) {
+          const fullDuty = calculateGeneralStampDuty(value)
+          const exemptDuty = calculateGeneralStampDuty(800000)
+          const slidingFactor = (1000000 - value) / 200000
+          return roundCurrency(fullDuty - exemptDuty * slidingFactor)
+        }
       }
     }
 
@@ -56,11 +67,11 @@ export const nsw: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 176
+    return 175.70
   },
 
   calculateLandTransferFee(): number {
-    return 176
+    return 175.70
   },
 
   calculateForeignSurcharge(inputs: FormState): number | null {
@@ -78,17 +89,33 @@ export const nsw: StateCalculator = {
     const value = inputs.propertyValue
     const fullDuty = calculateGeneralStampDuty(value)
 
-    if (value <= 800000) {
-      return { status: 'exempt', savings: fullDuty, description: 'FHBAS: Full stamp duty exemption for properties up to $800k' }
-    }
-
-    if (value <= 1000000) {
-      const concessionRate = (1000000 - value) / 200000
-      const actualDuty = roundCurrency(fullDuty * (1 - concessionRate))
-      return {
-        status: 'concession',
-        savings: fullDuty - actualDuty,
-        description: 'FHBAS: Sliding scale concession ($800k–$1M)',
+    if (inputs.propertyType === 'vacantLand') {
+      if (value <= 350000) {
+        return { status: 'exempt', savings: fullDuty, description: 'FHBAS: Full stamp duty exemption for vacant land up to $350k' }
+      }
+      if (value <= 450000) {
+        const exemptDuty = calculateGeneralStampDuty(350000)
+        const slidingFactor = (450000 - value) / 100000
+        const actualDuty = roundCurrency(fullDuty - exemptDuty * slidingFactor)
+        return {
+          status: 'concession',
+          savings: fullDuty - actualDuty,
+          description: 'FHBAS: Sliding scale concession for vacant land ($350k–$450k)',
+        }
+      }
+    } else {
+      if (value <= 800000) {
+        return { status: 'exempt', savings: fullDuty, description: 'FHBAS: Full stamp duty exemption for properties up to $800k' }
+      }
+      if (value <= 1000000) {
+        const exemptDuty = calculateGeneralStampDuty(800000)
+        const slidingFactor = (1000000 - value) / 200000
+        const actualDuty = roundCurrency(fullDuty - exemptDuty * slidingFactor)
+        return {
+          status: 'concession',
+          savings: fullDuty - actualDuty,
+          description: 'FHBAS: Sliding scale concession ($800k–$1M)',
+        }
       }
     }
 

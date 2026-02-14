@@ -45,6 +45,7 @@ export const vic: StateCalculator = {
     const value = inputs.propertyValue
 
     // VIC FHB: $0 stamp duty up to $600k, sliding scale $600k-$750k
+    // FHB sliding scale uses general rates as the base (not PPR)
     if (inputs.isFirstHomeBuyer && inputs.propertyPurpose === 'home') {
       if (value <= 600000) {
         return 0
@@ -105,17 +106,18 @@ export const vic: StateCalculator = {
     const value = inputs.propertyValue
 
     if (inputs.isFirstHomeBuyer && inputs.propertyPurpose === 'home') {
-      const fullDuty = calculateGeneralStampDuty(value)
+      // FHB sliding scale uses general rates as the base (not PPR)
+      const generalDuty = calculateGeneralStampDuty(value)
 
       if (value <= 600000) {
-        return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for properties up to $600k' }
+        return { status: 'exempt', savings: generalDuty, description: 'FHB: Full stamp duty exemption for properties up to $600k' }
       }
       if (value <= 750000) {
         const concessionRate = (750000 - value) / 150000
-        const actualDuty = roundCurrency(fullDuty * (1 - concessionRate))
+        const actualDuty = roundCurrency(generalDuty * (1 - concessionRate))
         return {
           status: 'concession',
-          savings: fullDuty - actualDuty,
+          savings: generalDuty - actualDuty,
           description: 'FHB: Sliding scale concession ($600k–$750k)',
         }
       }

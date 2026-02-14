@@ -18,27 +18,28 @@ const homeConcessionBrackets: StampDutyBracket[] = [
   { min: 1000001, max: Infinity, base: 30850, rate: 0.0575 },
 ]
 
+// QLD FHB established home concession — fixed dollar amount, stepped phase-out
+// Decreases by $1,735 per $10k step above $710k, reaching $0 at $800k
+function getFHBEstablishedConcession(value: number): number {
+  if (value < 710000) return 17350
+  if (value >= 800000) return 0
+  const step = Math.floor((value - 710000) / 10000)
+  return Math.max(0, 17350 - (step + 1) * 1735)
+}
+
 export const qld: StateCalculator = {
   calculateStampDuty(inputs: FormState): number {
     const value = inputs.propertyValue
 
-    // QLD FHB concession for established homes: exempt up to $700k, sliding $700k-$800k
     if (inputs.isFirstHomeBuyer && inputs.propertyPurpose === 'home') {
       if (inputs.propertyType === 'newlyConstructed' || inputs.propertyType === 'vacantLand') {
-        // From 1 May 2025: full exemption for FHB new homes, no value cap
+        // From 1 May 2025: full exemption for FHB new homes/vacant land, no value cap
         return 0
       }
-      // Established homes FHB: exempt up to $700k, sliding $700k-$800k
-      if (value <= 700000) {
-        return 0
-      }
-      if (value <= 800000) {
-        const homeDuty = roundCurrency(calculateFromBrackets(value, homeConcessionBrackets))
-        const concessionRate = (800000 - value) / 100000
-        return roundCurrency(homeDuty * (1 - concessionRate))
-      }
-      // Over $800k: home concession rate if owner-occupier
-      return roundCurrency(calculateFromBrackets(value, homeConcessionBrackets))
+      // Established homes FHB: home concession rate minus stepped FHB concession
+      const homeDuty = roundCurrency(calculateFromBrackets(value, homeConcessionBrackets))
+      const concession = getFHBEstablishedConcession(value)
+      return roundCurrency(Math.max(0, homeDuty - concession))
     }
 
     // Home concession for owner-occupier non-FHB
@@ -95,23 +96,22 @@ export const qld: StateCalculator = {
 
     if (inputs.propertyType === 'newlyConstructed' || inputs.propertyType === 'vacantLand') {
       const fullDuty = roundCurrency(calculateFromBrackets(value, homeConcessionBrackets))
-      return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for new homes' }
+      return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for new homes (from May 2025)' }
     }
 
-    // Established homes
-    if (value <= 700000) {
-      const fullDuty = roundCurrency(calculateFromBrackets(value, homeConcessionBrackets))
-      return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for established homes up to $700k' }
+    // Established homes — stepped fixed dollar concession
+    const homeDuty = roundCurrency(calculateFromBrackets(value, homeConcessionBrackets))
+    const concession = getFHBEstablishedConcession(value)
+
+    if (concession >= homeDuty) {
+      return { status: 'exempt', savings: homeDuty, description: 'FHB: Full stamp duty exemption for established homes up to $710k' }
     }
 
-    if (value <= 800000) {
-      const homeDuty = roundCurrency(calculateFromBrackets(value, homeConcessionBrackets))
-      const concessionRate = (800000 - value) / 100000
-      const actualDuty = roundCurrency(homeDuty * (1 - concessionRate))
+    if (concession > 0) {
       return {
         status: 'concession',
-        savings: homeDuty - actualDuty,
-        description: 'FHB: Sliding scale concession for established homes ($700k–$800k)',
+        savings: concession,
+        description: `FHB: $${concession.toLocaleString()} concession for established homes ($710k–$800k)`,
       }
     }
 
