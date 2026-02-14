@@ -26,6 +26,7 @@ dist-ssr
 # Claude Code
 .claude/
 CLAUDE.md
+TODO.md
 
 # Firecrawl scraped data
 .firecrawl/
