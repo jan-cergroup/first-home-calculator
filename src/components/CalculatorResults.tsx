@@ -1,7 +1,9 @@
 import type { EnhancedCalculatorResults, StateFormConfig, FormState } from '../types'
 import { useState } from 'react'
 import { formatCurrency, formatPercentage } from '../utils/format'
+import { generatePdf } from '../utils/generatePdf'
 import { DonutChart } from './DonutChart'
+import { EmailResultsModal } from './EmailResultsModal'
 
 interface CalculatorResultsProps {
   results: EnhancedCalculatorResults
@@ -41,6 +43,7 @@ function SchemeStatusIcon({ eligible }: { eligible: boolean }) {
 
 export function CalculatorResults({ results, stateConfig, formState }: CalculatorResultsProps) {
   const [showAssumptions, setShowAssumptions] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false)
 
   const loanAmount = results.loan.loanAmount
 
@@ -180,16 +183,6 @@ export function CalculatorResults({ results, stateConfig, formState }: Calculato
           </>
         )}
 
-        {/* Borrowing power warning */}
-        {results.borrowingPower.estimatedMax < results.loan.loanAmount && results.loan.loanAmount > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-            <p className="text-sm text-amber-800">
-              Estimated max borrowing: <strong>{formatCurrency(results.borrowingPower.estimatedMax)}</strong>
-              <span className="text-xs ml-1">(at {formatPercentage(results.borrowingPower.assessmentRate)})</span>
-            </p>
-          </div>
-        )}
-
         {/* Disclaimer */}
         <p className="text-xs text-gray-400 leading-relaxed">
           You may be eligible for the Federal Government First Home Owner Scheme (FHOS).
@@ -202,6 +195,50 @@ export function CalculatorResults({ results, stateConfig, formState }: Calculato
           </button>
         </p>
       </div>
+
+      {/* CTAs */}
+      <div className="space-y-3">
+        {/* Download PDF CTA */}
+        <button
+          onClick={() => generatePdf(formState, results, stateConfig)}
+          className="w-full bg-accent-light rounded-2xl p-5 flex items-center gap-4 hover:bg-accent/15 transition-colors cursor-pointer group text-left"
+        >
+          <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
+            <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-accent-dark">Download your estimate</p>
+            <p className="text-xs text-accent-dark/60 mt-0.5">Save a PDF summary of your results</p>
+          </div>
+          <svg className="w-5 h-5 text-accent/40 group-hover:text-accent transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        {/* Email CTA */}
+        <button
+          onClick={() => setShowEmailModal(true)}
+          className="w-full bg-accent-light rounded-2xl p-5 flex items-center gap-4 hover:bg-accent/15 transition-colors cursor-pointer group text-left"
+        >
+          <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
+            <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-accent-dark">Email your estimate</p>
+            <p className="text-xs text-accent-dark/60 mt-0.5">Get a copy sent to your inbox</p>
+          </div>
+          <svg className="w-5 h-5 text-accent/40 group-hover:text-accent transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Email modal */}
+      <EmailResultsModal isOpen={showEmailModal} onClose={() => setShowEmailModal(false)} />
 
       {/* Assumptions modal */}
       {showAssumptions && (
@@ -222,11 +259,6 @@ export function CalculatorResults({ results, stateConfig, formState }: Calculato
               <p>
                 Stamp duty rates, FHOG amounts, and scheme eligibility are subject to change.
                 LMI estimates are approximate and actual premiums may vary by lender.
-              </p>
-              <p>
-                Borrowing power is estimated using a simplified assessment. Actual borrowing
-                capacity will depend on your lender&apos;s specific criteria, credit history,
-                and other financial commitments.
               </p>
               <p>
                 FHDS (First Home Guarantee) eligibility shown is indicative only. Places are

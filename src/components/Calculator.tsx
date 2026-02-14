@@ -34,7 +34,7 @@ export function Calculator() {
         </div>
 
         {/* Results card — sticky */}
-        <div className="lg:col-span-2 lg:self-start lg:sticky lg:top-6">
+        <div className="lg:col-span-2 lg:self-start lg:sticky lg:top-22">
           <CalculatorResults results={results} stateConfig={stateConfig} formState={formState} />
         </div>
       </div>
