@@ -1,73 +1,68 @@
-# React + TypeScript + Vite
+# First Home Buyer Calculator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A free online calculator for Australian first home buyers at [firsthomebuyercalculator.com.au](https://firsthomebuyercalculator.com.au).
 
-Currently, two official plugins are available:
+## What it does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Estimates the full cost of buying your first home in Australia, including:
 
-## React Compiler
+- **Stamp duty** with state-specific first home buyer concessions and exemptions
+- **First Home Owners Grant (FHOG)** eligibility and amount by state
+- **First Home Guarantee (FHDS)** scheme eligibility based on price caps, income, and LVR
+- **Borrowing power** based on income, expenses, HECS debt, and HEM benchmarks
+- **Lenders Mortgage Insurance (LMI)** estimates (waived when FHDS eligible)
+- **Upfront costs** breakdown — deposit, stamp duty, registration fees, transfer fees, conveyancing
+- **Monthly repayments** with principal & interest over 15–30 year terms
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Everything runs in the browser. No data is sent to any server.
 
-## Expanding the ESLint configuration
+## States and territories
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+All 8 Australian states and territories are supported, each with their own stamp duty rates, concession thresholds, grant amounts, and government fees:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| State | FHOG (new homes) | Stamp duty FHB concession |
+|-------|-------------------|---------------------------|
+| NSW | $10,000 (up to $600k) | Exempt up to $800k, sliding to $1M |
+| VIC | $10,000 (up to $750k) | Exempt up to $600k, sliding to $750k |
+| QLD | $30,000 (up to $750k) | New homes exempt (from May 2025); established homes concession up to $800k |
+| WA | $10,000 (up to $750k) | Varies by property type |
+| SA | $15,000 | Full exemption for eligible properties |
+| TAS | $10,000 (no price cap) | 50% discount on duty |
+| ACT | No grant (replaced by HBCS) | Full stamp duty concession via Home Buyer Concession Scheme |
+| NT | $10,000–$50,000 | Stamp duty concessions available |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## First Home Guarantee (FHDS) price caps
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+The calculator checks eligibility against current property price caps (October 2025):
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| State | Capital city / metro | Regional |
+|-------|---------------------|----------|
+| NSW | $1,500,000 | $800,000 |
+| VIC | $950,000 | $650,000 |
+| QLD | $1,000,000 | $700,000 |
+| WA | $850,000 | $600,000 |
+| SA | $900,000 | $500,000 |
+| TAS | $700,000 | $550,000 |
+| ACT | $1,000,000 | $1,000,000 |
+| NT | $600,000 | $600,000 |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Income caps: $125,000 (single) / $200,000 (couple).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Accuracy
+
+Stamp duty calculations for NSW, VIC, and QLD have been verified against [calculatorsaustralia.com.au](https://stampduty.calculatorsaustralia.com.au/). Other figures are estimates:
+
+- **LMI** uses approximate lookup tables — actual premiums vary by lender
+- **Borrowing power** uses a DTI model with 3% interest rate buffer — lenders may assess differently
+- **HEM benchmarks** are approximate — real values are proprietary Melbourne Institute data
+- **HECS repayment** thresholds are based on 2024–25 ATO rates
+
+## Known limitations
+
+- WA stamp duty is missing the "First Home Owner Rate of Duty" brackets
+- WA land transfer fee formula is incomplete
+- SA land transfer fee is off by ~$12
+
+## Disclaimer
+
+This calculator provides estimates only. Contact your state revenue office for exact stamp duty figures and grant eligibility.
