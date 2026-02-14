@@ -23,5 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
+# Claude Code
+.claude/
+CLAUDE.md
+
 # Firecrawl scraped data
 .firecrawl/
+.vercel
