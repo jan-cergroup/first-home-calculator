@@ -50,7 +50,7 @@ Income caps: $125,000 (single) / $200,000 (couple).
 
 ## Accuracy
 
-Stamp duty calculations for NSW, VIC, and QLD have been verified against [calculatorsaustralia.com.au](https://stampduty.calculatorsaustralia.com.au/). Other figures are estimates:
+Stamp duty calculations for NSW, VIC, and QLD have been verified against official state revenue office rate tables. Other figures are estimates:
 
 - **LMI** uses approximate lookup tables — actual premiums vary by lender
 - **Borrowing power** uses a DTI model with 3% interest rate buffer — lenders may assess differently
