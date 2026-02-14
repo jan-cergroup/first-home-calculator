@@ -64,11 +64,6 @@ export interface LoanDetails {
   lmiEstimate: number
 }
 
-export interface BorrowingPower {
-  estimatedMax: number
-  assessmentRate: number
-}
-
 export interface UpfrontCosts {
   deposit: number
   stampDuty: number
@@ -87,7 +82,6 @@ export interface EnhancedCalculatorResults {
   stampDutyConcession: StampDutyConcessionResult
   fhds: FHDSResult
   loan: LoanDetails
-  borrowingPower: BorrowingPower
   upfrontCosts: UpfrontCosts
 }
 

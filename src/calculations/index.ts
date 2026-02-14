@@ -7,10 +7,8 @@ import { sa } from './sa'
 import { tas } from './tas'
 import { act } from './act'
 import { nt } from './nt'
-import { calcMonthlyRepayment, calcLVR, calcMaxLoan } from './loanCalculations'
+import { calcMonthlyRepayment, calcLVR } from './loanCalculations'
 import { calcLMI } from './lmiCalculation'
-import { calcHecsMonthlyRepayment } from './hecsCalculation'
-import { getEffectiveExpenses } from './expensesCalculation'
 import { calculateFHDSEligibility } from './fhdsCalculation'
 
 const calculators: Record<AustralianState, StateCalculator> = {
@@ -58,14 +56,7 @@ export function calculate(inputs: FormState): EnhancedCalculatorResults {
   // Normalize -1 (unknown) for display purposes — keep as -1 so UI can show "unknown"
   const lmiForCosts = lmiEstimate > 0 ? lmiEstimate : 0
 
-  // 6. Borrowing power
-  const monthlyGrossIncome = inputs.yearlyIncome / 12
-  const monthlyHecs = calcHecsMonthlyRepayment(inputs.yearlyIncome, inputs.hecsDebt)
-  const effectiveExpenses = getEffectiveExpenses(inputs.monthlyExpenses, inputs.yearlyIncome, inputs.buyerType)
-  const assessmentRate = inputs.interestRate + 3
-  const estimatedMax = calcMaxLoan(monthlyGrossIncome, effectiveExpenses, monthlyHecs, inputs.interestRate, inputs.loanTerm)
-
-  // 7. Upfront costs
+  // 6. Upfront costs
   const fhogOffset = concessions.eligible ? concessions.grantAmount : 0
   const foreignSurchargeAmount = foreignPurchaseSurcharge !== null ? foreignPurchaseSurcharge : 0
   const upfrontTotal = inputs.depositSavings + stampDuty + lmiForCosts +
@@ -90,10 +81,6 @@ export function calculate(inputs: FormState): EnhancedCalculatorResults {
       totalRepayment,
       totalInterest,
       lmiEstimate,
-    },
-    borrowingPower: {
-      estimatedMax,
-      assessmentRate,
     },
     upfrontCosts: {
       deposit: inputs.depositSavings,
