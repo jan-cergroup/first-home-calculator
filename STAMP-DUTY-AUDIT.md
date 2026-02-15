@@ -1,0 +1,233 @@
+# Stamp Duty Calculation Audit
+
+**Date:** 2026-02-15
+**Reference:** money.com.au Stamp Duty Calculator API (`calculators.money.com.au/v1/stamp-duty/calculate`)
+**Test cases:** 10 scenarios × 8 states = 80 comparisons
+
+---
+
+## Summary
+
+| Category | Count |
+|----------|-------|
+| Confirmed bugs in our code | 4 |
+| Likely bugs (need verification) | 3 |
+| States with fee schedule differences | All 8 |
+| States with correct stamp duty | QLD (mostly), SA (non-FHB) |
+
+---
+
+## BUG 1: NT stamp duty rate is 5.95% — should be 4.95%
+
+**File:** `src/calculations/nt.ts:15`
+**Severity:** HIGH — affects every NT calculation above $525k
+
+```ts
+// CURRENT (wrong):
+return roundCurrency(value * 0.0595)
+
+// CORRECT:
+return roundCurrency(value * 0.0495)
+```
+
+**Evidence:**
+
+| Scenario | Our value | Reference | Diff |
+|----------|-----------|-----------|------|
+| $650k non-FHB | $38,675 | $32,175 | +$6,500 (exactly 1% of $650k) |
+| $1M non-FHB investor | $59,500 | $49,500 | +$10,000 (exactly 1% of $1M) |
+| $800k FHB | $47,600 | $39,600 | +$8,000 (exactly 1% of $800k) |
+
+The reference values are exactly 4.95% of property value, confirming the correct rate.
+
+---
+
+## BUG 2: VIC PPR rates applied above $550k — should use general rates
+
+**File:** `src/calculations/vic.ts:61-66`
+**Severity:** MEDIUM — overcharges non-FHB owner-occupiers below general rate by ~$3,100
+
+Our code always applies PPR brackets for `propertyPurpose === 'home'`. But the PPR concession (5% rate in the $130k-$440k range vs general 6%) appears to only apply for properties up to ~$550k.
+
+**Evidence:**
+
+| Scenario | Our value (PPR) | Reference (general) | Diff |
+|----------|-----------------|---------------------|------|
+| $500k non-FHB owner-occ | $21,970 | $21,970 | OK (both match PPR) |
+| $650k non-FHB owner-occ | $30,970 | $34,070 | -$3,100 |
+| $800k FHB (above concession) | $39,970 | $43,070 | -$3,100 |
+
+The $3,100 difference is exactly the cumulative impact of using 5% vs 6% in the $130k-$440k range: `($440k - $130k) × 1% = $3,100`.
+
+At $500k (below $550k), both PPR and ref agree. Above $550k, the ref uses general rates. This suggests VIC PPR concession has a property value ceiling of approximately $550k.
+
+**Note:** This also affects FHB properties above $750k (where FHB concession doesn't apply) — they incorrectly get PPR rates instead of general rates.
+
+---
+
+## BUG 3: NSW stamp duty brackets — consistent $117 offset — FIXED
+
+**File:** `src/calculations/nsw.ts:5-12`
+**Severity:** MEDIUM — all NSW calculations in the $372k-$1.24M bracket were $117 too low
+**Status:** FIXED — updated to 2025-26 bracket schedule
+
+**Root cause:** Bracket thresholds and base amounts were from the prior-year schedule. The 2025-26 schedule shifted multiple boundaries:
+- $37k → $36k, $99k → $97k, $372k → $364k, $1.24M → $1.212M
+- Base amounts updated accordingly ($512→$497, $1,597→$1,564, $11,152→$10,909, $50,212→$49,069)
+- Removed 7% bracket (5.5% rate confirmed to at least $5M)
+
+**Fix:** Updated `generalBrackets` array with corrected thresholds and bases.
+
+**Verification (all pass):**
+
+| Scenario | Our value | Reference | Diff |
+|----------|-----------|-----------|------|
+| $500k non-FHB | $17,029 | $17,029 | $0 |
+| $650k non-FHB | $23,779 | $23,779 | $0 |
+| $1M investor | $39,529 | $39,529 | $0 |
+| $900k FHB (50% sliding scale) | $19,765 | $19,765 | $0 |
+
+---
+
+## BUG 4: WA stamp duty brackets are wrong (known issue)
+
+**File:** `src/calculations/wa.ts:14-20`
+**Severity:** HIGH — affects all WA calculations
+
+Already documented as a known issue. The comparison confirms:
+
+| Scenario | Our value | Reference | Diff |
+|----------|-----------|-----------|------|
+| $500k FHB | $12,828 | $7,505 | +$5,323 |
+| $500k non-FHB owner-occ | $18,325 | $17,765 | +$560 |
+| $650k non-FHB owner-occ | $26,050 | $24,890 | +$1,160 |
+| $1M investor | $45,415 | $42,616 | +$2,800 |
+
+WA needs:
+1. **First Home Owner Rate of Duty** brackets (separate from residential) — explains the $5,323 diff at $500k FHB
+2. Updated residential brackets — our rates produce $560+ too much even for non-FHB
+
+---
+
+## LIKELY BUG 5: SA FHB established home concession may have expired
+
+**File:** `src/calculations/sa.ts:31-35`
+**Severity:** HIGH — gives $0 stamp duty when full duty should apply
+
+Our code gives full stamp duty exemption for FHB established homes ≤$650k. But the reference charges full stamp duty:
+
+| Scenario | Our value | Reference | Diff |
+|----------|-----------|-----------|------|
+| $500k estab FHB | $0 | $21,330 | -$21,330 |
+| $650k estab FHB | $0 | $29,580 | -$29,580 |
+
+The SA FHB established home stamp duty relief was a **temporary measure** (6 June 2024 to 30 June 2025). Since we're now in Feb 2026, this concession has **expired**. From 1 July 2025, only new homes and vacant land get FHB stamp duty relief in SA.
+
+**Fix needed:** Remove the established home exemption on lines 31-35.
+
+---
+
+## LIKELY BUG 6: NT FHB stamp duty exemption uncertain
+
+**File:** `src/calculations/nt.ts:22-28`
+**Severity:** HIGH if wrong — difference is the full stamp duty amount
+
+Our code exempts FHB from stamp duty for properties ≤$650k. The reference charges full duty:
+
+| Scenario | Our value | Reference | Diff |
+|----------|-----------|-----------|------|
+| $500k estab FHB | $0 | $23,929 | -$23,929 |
+| $650k estab FHB | $0 | $32,175 | -$32,175 |
+| $500k new FHB | $0 | $23,929 | -$23,929 |
+
+**However:** money.com.au also shows $0 FHOG for NT new homes (ours: $50,000), which is clearly wrong — NT definitely has a $50k FHOG. This suggests money.com.au may not have implemented NT concessions correctly.
+
+**Needs verification** with NT Revenue Office before changing.
+
+---
+
+## LIKELY BUG 7: TAS FHB established exemption — cap may be wrong
+
+**File:** `src/calculations/tas.ts` (where established FHB exemption cap is set)
+**Severity:** MEDIUM
+
+Our code exempts FHB established homes up to $750k. The reference exempts at all tested values:
+
+| Scenario | Our value | Reference | Diff |
+|----------|-----------|-----------|------|
+| $500k estab FHB | $0 | $0 | OK |
+| $650k estab FHB | $0 | $0 | OK |
+| $800k estab FHB | $31,185 | $0 | +$31,185 |
+| $900k estab FHB | $35,685 | $0 | +$35,685 |
+
+This suggests the TAS FHB established home exemption may have no value cap (or a higher cap than $750k). The original policy was for properties ≤$750k but may have been extended.
+
+**Needs verification** with TAS Revenue Office.
+
+---
+
+## ACT comparison
+
+| Scenario | Our value | Reference | Diff | Notes |
+|----------|-----------|-----------|------|-------|
+| $500k estab FHB | $0 | $0 | OK | |
+| $650k estab FHB | $0 | $0 | OK | |
+| $800k estab FHB | $0 | $0 | OK | |
+| $900k estab FHB | $0 | $0 | OK | |
+| $500k new FHB | $0 | $0 | OK | |
+| $650k new FHB | $0 | $0 | OK | |
+| $1M investor | $37,750 | $36,950 | +$800 | Bracket table slightly off |
+
+ACT stamp duty is mostly correct for FHB scenarios. The $800 difference at $1M investor suggests a minor bracket discrepancy.
+
+**Note:** ACT non-FHB owner-occ results ($0 from ref) are due to the API test using `owned_before: 'NO'` which triggers HBCS concession — not a real discrepancy.
+
+---
+
+## QLD comparison
+
+| Scenario | Our value | Reference | Diff | Notes |
+|----------|-----------|-----------|------|-------|
+| $500k estab FHB | $0 | $0 | OK | |
+| $650k estab FHB | $0 | $0 | OK | |
+| $800k estab FHB | $21,850 | $21,850 | OK | |
+| $900k estab FHB | $26,350 | $33,525 | -$7,175 | Ref bug: doesn't apply home concession |
+| $500k new FHB | $0 | $0 | OK | |
+| $650k new FHB | $0 | $0 | OK | |
+| $500k non-FHB owner-occ | $8,750 | $8,750 | OK | |
+| $650k non-FHB owner-occ | $15,100 | $15,100 | OK | |
+| $1M investor | $38,025 | $38,025 | OK | |
+
+QLD stamp duty is **correct** across all scenarios. The $900k FHB discrepancy is a **money.com.au bug** — they fail to apply the home concession rate for FHB properties above $800k (where FHB concession = $0 but home concession rate should still apply since it's owner-occupied).
+
+---
+
+## Fee Schedule Differences (all states)
+
+All mortgage registration and transfer fees differ slightly from the reference, suggesting our fee schedules use prior-year rates:
+
+| State | Our Mort Reg | Ref Mort Reg | Our Transfer (at $650k) | Ref Transfer |
+|-------|-------------|-------------|------------------------|-------------|
+| NSW | $175.70 | $171.70 | $175.70 | $171.70 |
+| VIC | $136.00 | $122.10 | $1,633.00 | $1,619.60 |
+| QLD | $238.00 | $231.98 | $2,340.00 | $2,279.30 |
+| WA | $217.00 | $210.30 | $285.00 | $340.30 |
+| SA | $198.00 | $192.00 | $6,474.00 | $6,272.00 |
+| TAS | $163.00 | $159.88 | $250.00 | $244.97 |
+| ACT | $178.00 | $172.00 | $479.00 | $463.00 |
+| NT | $176.00 | $172.00 | $176.00 | $172.00 |
+
+**Note:** Some of our fees are higher and some lower than the reference. WA transfer fee is notably $55 lower than ref across all scenarios, while SA transfer fee is $200+ higher.
+
+---
+
+## Recommended Priority Order
+
+1. **NT rate fix** (5.95% → 4.95%) — simple one-line fix, high impact
+2. **SA FHB established concession** — remove expired temporary measure
+3. **VIC PPR rate logic** — add value cap or switch to general rates above $550k
+4. **NSW bracket update** — reconcile bracket thresholds with current Revenue Office rates
+5. **WA complete overhaul** — needs First Home Owner Rate of Duty + updated residential brackets
+6. **TAS/NT FHB rules** — verify with government sources before changing
+7. **Fee schedules** — update all states to current year rates
+8. **ACT $1M bracket** — minor $800 discrepancy at $1M investor

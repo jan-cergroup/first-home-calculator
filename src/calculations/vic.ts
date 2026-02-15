@@ -10,13 +10,14 @@ const generalBrackets: StampDutyBracket[] = [
 ]
 
 // VIC PPR (principal place of residence) concession brackets
+// PPR concession only applies for properties up to $550k
+// (5% rate in $130k-$440k range vs general 6%)
+// Above $550k, general rates apply
 const pprBrackets: StampDutyBracket[] = [
   { min: 0, max: 25000, base: 0, rate: 0.014 },
   { min: 25001, max: 130000, base: 350, rate: 0.024 },
   { min: 130001, max: 440000, base: 2870, rate: 0.05 },
   { min: 440001, max: 550000, base: 18370, rate: 0.06 },
-  { min: 550001, max: 960000, base: 24970, rate: 0.06 },
-  { min: 960001, max: Infinity, base: 0, rate: 0.055 },
 ]
 
 function calculateGeneralStampDuty(value: number): number {
@@ -31,11 +32,9 @@ function calculateGeneralStampDuty(value: number): number {
 }
 
 function calculatePPRStampDuty(value: number): number {
-  if (value > 960000 && value <= 2000000) {
-    return roundCurrency(value * 0.055)
-  }
-  if (value > 2000000) {
-    return roundCurrency(110000 + (value - 2000000) * 0.065)
+  // PPR concession only applies up to $550k; above that, general rates apply
+  if (value > 550000) {
+    return calculateGeneralStampDuty(value)
   }
   return roundCurrency(calculateFromBrackets(value, pprBrackets))
 }

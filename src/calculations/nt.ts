@@ -4,15 +4,15 @@ import { roundCurrency } from './utils'
 // NT uses a different stamp duty formula:
 // Duty = (0.06571441 × V^2) + 15V
 // where V = property value / 1000
-// For properties over $525,000, it's 5.95% of value
+// For properties over $525,000, it's 4.95% of value
 function calculateNTStampDuty(value: number): number {
   if (value <= 525000) {
     const v = value / 1000
     const duty = (0.06571441 * v * v) + (15 * v)
     return roundCurrency(Math.max(0, duty))
   }
-  // 5.95% of the dutiable value for properties over $525,000
-  return roundCurrency(value * 0.0595)
+  // 4.95% of the dutiable value for properties over $525,000
+  return roundCurrency(value * 0.0495)
 }
 
 export const nt: StateCalculator = {

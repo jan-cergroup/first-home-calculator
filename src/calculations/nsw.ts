@@ -1,15 +1,14 @@
 import type { FormState, FHOGResult, StampDutyBracket, StampDutyConcessionResult, StateCalculator } from '../types'
 import { calculateFromBrackets, roundCurrency } from './utils'
 
-// NSW general stamp duty brackets
+// NSW general stamp duty brackets (2025-26 schedule)
 const generalBrackets: StampDutyBracket[] = [
   { min: 0, max: 17000, base: 0, rate: 0.0125 },
-  { min: 17001, max: 37000, base: 212, rate: 0.015 },
-  { min: 37001, max: 99000, base: 512, rate: 0.0175 },
-  { min: 99001, max: 372000, base: 1597, rate: 0.035 },
-  { min: 372001, max: 1240000, base: 11152, rate: 0.045 },
-  { min: 1240001, max: 3721000, base: 50212, rate: 0.055 },
-  { min: 3721001, max: Infinity, base: 186667, rate: 0.07 },
+  { min: 17001, max: 36000, base: 212, rate: 0.015 },
+  { min: 36001, max: 97000, base: 497, rate: 0.0175 },
+  { min: 97001, max: 364000, base: 1564, rate: 0.035 },
+  { min: 364001, max: 1212000, base: 10909, rate: 0.045 },
+  { min: 1212001, max: Infinity, base: 49069, rate: 0.055 },
 ]
 
 function calculateGeneralStampDuty(value: number): number {
