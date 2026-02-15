@@ -1,27 +1,19 @@
 import type { FormState, FHOGResult, StampDutyBracket, StampDutyConcessionResult, StateCalculator } from '../types'
 import { calculateFromBrackets, roundCurrency } from './utils'
 
-// ACT general stamp duty brackets (commercial/non-residential schedule)
+// ACT stamp duty brackets (2025-26 schedule — rates unified across residential/commercial)
 const generalBrackets: StampDutyBracket[] = [
-  { min: 0, max: 200000, base: 0, rate: 0.006 },
-  { min: 200001, max: 300000, base: 1200, rate: 0.023 },
-  { min: 300001, max: 500000, base: 3500, rate: 0.04 },
-  { min: 500001, max: 750000, base: 11500, rate: 0.055 },
-  { min: 750001, max: 1000000, base: 25250, rate: 0.05 },
-  { min: 1000001, max: 1455000, base: 37750, rate: 0.05 },
-  { min: 1455001, max: Infinity, base: 60500, rate: 0.055 },
+  { min: 0, max: 200000, base: 0, rate: 0.012 },
+  { min: 200001, max: 300000, base: 2400, rate: 0.022 },
+  { min: 300001, max: 500000, base: 4600, rate: 0.034 },
+  { min: 500001, max: 750000, base: 11400, rate: 0.0432 },
+  { min: 750001, max: 1000000, base: 22200, rate: 0.059 },
+  { min: 1000001, max: 1455000, base: 36950, rate: 0.064 },
+  { min: 1455001, max: 1900000, base: 66070, rate: 0.0454 },
 ]
 
-// ACT residential stamp duty (owner-occupied)
-const residentialBrackets: StampDutyBracket[] = [
-  { min: 0, max: 200000, base: 0, rate: 0.0068 },
-  { min: 200001, max: 300000, base: 1360, rate: 0.0232 },
-  { min: 300001, max: 500000, base: 3680, rate: 0.0408 },
-  { min: 500001, max: 750000, base: 11840, rate: 0.057 },
-  { min: 750001, max: 1000000, base: 26090, rate: 0.0636 },
-  { min: 1000001, max: 1455000, base: 41990, rate: 0.0714 },
-  { min: 1455001, max: Infinity, base: 74470, rate: 0.058 },
-]
+// ACT residential rates now match general rates (tax reform convergence)
+const residentialBrackets = generalBrackets
 
 // ACT Home Buyer Concession Scheme (HBCS) income thresholds
 // Base income threshold: ~$170,000 for no children, increases per child
@@ -32,6 +24,10 @@ function getHBCSIncomeThreshold(childrenCount: number): number {
 }
 
 function getFullDuty(inputs: FormState): number {
+  // Above $1.9M: flat 5% of total property value
+  if (inputs.propertyValue > 1900000) {
+    return roundCurrency(inputs.propertyValue * 0.05)
+  }
   if (inputs.propertyPurpose === 'home') {
     return roundCurrency(calculateFromBrackets(inputs.propertyValue, residentialBrackets))
   }

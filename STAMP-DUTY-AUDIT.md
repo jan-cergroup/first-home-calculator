@@ -167,21 +167,20 @@ The TAS FHB established home exemption has no value cap. Confirmed via reference
 
 ---
 
-## ACT comparison
+## ACT comparison — FIXED
 
-| Scenario | Our value | Reference | Diff | Notes |
-|----------|-----------|-----------|------|-------|
-| $500k estab FHB | $0 | $0 | OK | |
-| $650k estab FHB | $0 | $0 | OK | |
-| $800k estab FHB | $0 | $0 | OK | |
-| $900k estab FHB | $0 | $0 | OK | |
-| $500k new FHB | $0 | $0 | OK | |
-| $650k new FHB | $0 | $0 | OK | |
-| $1M investor | $37,750 | $36,950 | +$800 | Bracket table slightly off |
+**Status:** FIXED — entire general bracket table updated to 2025-26 rates
 
-ACT stamp duty is mostly correct for FHB scenarios. The $800 difference at $1M investor suggests a minor bracket discrepancy.
+ACT has been progressively reforming stamp duty (converging residential and commercial rates). Both bracket tables were outdated. Updated general brackets with confirmed rates and unified residential to match. Added flat 5% rule for properties above $1.9M.
 
-**Note:** ACT non-FHB owner-occ results ($0 from ref) are due to the API test using `owned_before: 'NO'` which triggers HBCS concession — not a real discrepancy.
+**Verification (all pass):**
+
+| Scenario | Our value | Reference | Diff |
+|----------|-----------|-----------|------|
+| $500k estab FHB | $0 | $0 | $0 |
+| $1M investor | $36,950 | $36,950 | $0 |
+| $2M investor | $100,000 | $100,000 | $0 |
+| $3M investor | $150,000 | $150,000 | $0 |
 
 ---
 
