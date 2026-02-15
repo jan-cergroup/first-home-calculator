@@ -109,21 +109,22 @@ WA needs:
 
 ---
 
-## LIKELY BUG 5: SA FHB established home concession may have expired
+## LIKELY BUG 5: SA FHB established home concession expired — FIXED
 
-**File:** `src/calculations/sa.ts:31-35`
-**Severity:** HIGH — gives $0 stamp duty when full duty should apply
+**File:** `src/calculations/sa.ts`
+**Severity:** HIGH — was giving $0 stamp duty when full duty should apply
+**Status:** FIXED — removed expired temporary concession
 
-Our code gives full stamp duty exemption for FHB established homes ≤$650k. But the reference charges full stamp duty:
+The SA FHB established home stamp duty relief was a **temporary measure** (6 June 2024 to 30 June 2025). Removed the established home exemption; only new homes and vacant land retain FHB stamp duty relief.
+
+**Verification (all pass):**
 
 | Scenario | Our value | Reference | Diff |
 |----------|-----------|-----------|------|
-| $500k estab FHB | $0 | $21,330 | -$21,330 |
-| $650k estab FHB | $0 | $29,580 | -$29,580 |
-
-The SA FHB established home stamp duty relief was a **temporary measure** (6 June 2024 to 30 June 2025). Since we're now in Feb 2026, this concession has **expired**. From 1 July 2025, only new homes and vacant land get FHB stamp duty relief in SA.
-
-**Fix needed:** Remove the established home exemption on lines 31-35.
+| $500k estab FHB | $21,330 | $21,330 | $0 |
+| $650k estab FHB | $29,580 | $29,580 | $0 |
+| $500k new FHB | $0 | $0 | $0 |
+| $1M investor | $48,830 | $48,830 | $0 |
 
 ---
 

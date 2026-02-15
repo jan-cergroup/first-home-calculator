@@ -22,15 +22,10 @@ export const sa: StateCalculator = {
   calculateStampDuty(inputs: FormState): number {
     const value = inputs.propertyValue
 
-    // SA FHB relief: full stamp duty relief for FHB purchasing new homes
-    // or vacant land (from June 2024)
+    // SA FHB relief: full stamp duty relief for new homes and vacant land only
+    // (established home exemption was temporary: 6 Jun 2024 – 30 Jun 2025, now expired)
     if (inputs.isFirstHomeBuyer && inputs.propertyPurpose === 'home') {
       if (inputs.propertyType === 'newlyConstructed' || inputs.propertyType === 'vacantLand') {
-        return 0
-      }
-      // Established homes: FHB concession applies for properties up to $650k
-      // Full exemption up to some threshold, then sliding scale
-      if (value <= 650000) {
         return 0
       }
     }
@@ -87,11 +82,6 @@ export const sa: StateCalculator = {
       return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for new homes and vacant land' }
     }
 
-    if (value <= 650000) {
-      const fullDuty = calculateFullStampDuty(value)
-      return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for established homes up to $650k' }
-    }
-
-    return { status: 'fullRate', savings: 0, description: 'Property value exceeds FHB concession threshold' }
+    return { status: 'fullRate', savings: 0, description: 'No stamp duty concession for established homes' }
   },
 }
