@@ -20,12 +20,9 @@ export const tas: StateCalculator = {
   calculateStampDuty(inputs: FormState): number {
     const value = inputs.propertyValue
 
-    // TAS FHB stamp duty exemption: up to $750k for established homes
-    // (Feb 2024 to June 2026)
+    // TAS FHB stamp duty exemption: full exemption for established homes (no value cap)
     if (inputs.isFirstHomeBuyer && inputs.propertyPurpose === 'home' && inputs.propertyType === 'established') {
-      if (value <= 750000) {
-        return 0
-      }
+      return 0
     }
 
     return calculateFullStampDuty(value)
@@ -64,12 +61,10 @@ export const tas: StateCalculator = {
       return { status: 'fullRate', savings: 0, description: 'No stamp duty concession applies' }
     }
 
-    // TAS FHB: 50% discount mentioned in plan, but current code has full exemption for established ≤$750k
+    // TAS FHB: full stamp duty exemption for established homes (no value cap)
     if (inputs.propertyType === 'established') {
       const fullDuty = calculateFullStampDuty(inputs.propertyValue)
-      if (inputs.propertyValue <= 750000) {
-        return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for established homes up to $750k' }
-      }
+      return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for established homes' }
     }
 
     // For new/vacant land — no stamp duty concession in TAS (FHOG applies instead)

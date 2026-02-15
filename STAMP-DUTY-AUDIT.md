@@ -147,23 +147,23 @@ Our code exempts FHB from stamp duty for properties ≤$650k. The reference char
 
 ---
 
-## LIKELY BUG 7: TAS FHB established exemption — cap may be wrong
+## LIKELY BUG 7: TAS FHB established exemption — cap was wrong — FIXED
 
-**File:** `src/calculations/tas.ts` (where established FHB exemption cap is set)
-**Severity:** MEDIUM
+**File:** `src/calculations/tas.ts`
+**Severity:** MEDIUM — was charging full stamp duty for FHB established homes above $750k
+**Status:** FIXED — removed $750k value cap
 
-Our code exempts FHB established homes up to $750k. The reference exempts at all tested values:
+The TAS FHB established home exemption has no value cap. Confirmed via reference API: $0 stamp duty at $500k, $800k, $900k, $1.5M, even $5M. The exemption applies to established homes only (new homes/vacant land get FHOG instead).
+
+**Verification (all pass):**
 
 | Scenario | Our value | Reference | Diff |
 |----------|-----------|-----------|------|
-| $500k estab FHB | $0 | $0 | OK |
-| $650k estab FHB | $0 | $0 | OK |
-| $800k estab FHB | $31,185 | $0 | +$31,185 |
-| $900k estab FHB | $35,685 | $0 | +$35,685 |
-
-This suggests the TAS FHB established home exemption may have no value cap (or a higher cap than $750k). The original policy was for properties ≤$750k but may have been extended.
-
-**Needs verification** with TAS Revenue Office.
+| $500k estab FHB | $0 | $0 | $0 |
+| $800k estab FHB | $0 | $0 | $0 |
+| $900k estab FHB | $0 | $0 | $0 |
+| $1.5M estab FHB | $0 | $0 | $0 |
+| $800k non-FHB | $31,185 | $31,185 | $0 |
 
 ---
 
