@@ -60,11 +60,11 @@ export const nt: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 176
+    return 172
   },
 
   calculateLandTransferFee(): number {
-    return 176
+    return 172
   },
 
   calculateForeignSurcharge(): number | null {

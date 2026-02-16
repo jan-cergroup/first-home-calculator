@@ -47,20 +47,18 @@ export const sa: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 198
+    return 192
   },
 
   calculateLandTransferFee(inputs: FormState): number {
-    // SA: Tiered fee schedule
+    // SA: tiered below $50k, formula above
     const value = inputs.propertyValue
-    if (value <= 5000) return 198
-    if (value <= 20000) return 297
-    if (value <= 40000) return 396
-    if (value <= 50000) return 594
-    // For higher values: calculated based on value
-    // Approximately $198 base + fee per value bracket
-    const fee = 594 + Math.ceil((value - 50000) / 10000) * 98
-    return roundCurrency(Math.min(fee, 10000))
+    if (value <= 5000) return 192
+    if (value <= 20000) return 215
+    if (value <= 40000) return 236
+    if (value <= 50000) return 332
+    // Above $50k: $9.90 per $1,000 of value minus $163
+    return Math.round(((value / 1000) * 9.90 - 163) * 100) / 100
   },
 
   calculateForeignSurcharge(inputs: FormState): number | null {

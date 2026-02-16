@@ -193,32 +193,31 @@ QLD stamp duty is **correct** across all scenarios. The $900k FHB discrepancy is
 
 ---
 
-## Fee Schedule Differences (all states)
+## Fee Schedule Differences (all states) — FIXED
 
-All mortgage registration and transfer fees differ slightly from the reference, suggesting our fee schedules use prior-year rates:
+All mortgage registration and transfer fees updated to 2025-26 rates.
 
-| State | Our Mort Reg | Ref Mort Reg | Our Transfer (at $650k) | Ref Transfer |
-|-------|-------------|-------------|------------------------|-------------|
-| NSW | $175.70 | $171.70 | $175.70 | $171.70 |
-| VIC | $136.00 | $122.10 | $1,633.00 | $1,619.60 |
-| QLD | $238.00 | $231.98 | $2,340.00 | $2,279.30 |
-| WA | $217.00 | $210.30 | $285.00 | $340.30 |
-| SA | $198.00 | $192.00 | $6,474.00 | $6,272.00 |
-| TAS | $163.00 | $159.88 | $250.00 | $244.97 |
-| ACT | $178.00 | $172.00 | $479.00 | $463.00 |
-| NT | $176.00 | $172.00 | $176.00 | $172.00 |
-
-**Note:** Some of our fees are higher and some lower than the reference. WA transfer fee is notably $55 lower than ref across all scenarios, while SA transfer fee is $200+ higher.
+| State | Our Mort Reg | Ref Mort Reg | Our Transfer (at $650k) | Ref Transfer | Status |
+|-------|-------------|-------------|------------------------|-------------|--------|
+| NSW | $171.70 | $171.70 | $171.70 | $171.70 | OK |
+| VIC | $122.10 | $122.10 | $1,619.60 | $1,619.60 | OK |
+| QLD | $231.98 | $231.98 | $2,279.30 | $2,279.30 | OK |
+| WA | $210.30 | $210.30 | $340.30 | $340.30 | OK |
+| SA | $192.00 | $192.00 | $6,272.00 | $6,272.00 | OK |
+| TAS | $159.88 | $159.88 | $244.97 | $244.97 | OK |
+| ACT | $172.00 | $172.00 | $463.00 | $463.00 | OK |
+| NT | $172.00 | $172.00 | $172.00 | $172.00 | OK |
 
 ---
 
-## Recommended Priority Order
+## Remaining Items
 
-1. **NT rate fix** (5.95% → 4.95%) — simple one-line fix, high impact
-2. **SA FHB established concession** — remove expired temporary measure
-3. **VIC PPR rate logic** — add value cap or switch to general rates above $550k
-4. **NSW bracket update** — reconcile bracket thresholds with current Revenue Office rates
-5. **WA complete overhaul** — needs First Home Owner Rate of Duty + updated residential brackets
-6. **TAS/NT FHB rules** — verify with government sources before changing
-7. **Fee schedules** — update all states to current year rates
-8. **ACT $1M bracket** — minor $800 discrepancy at $1M investor
+1. **LIKELY BUG 6: NT FHB stamp duty exemption** — needs verification with NT Revenue Office before changing
+2. ~~NT rate fix~~ — FIXED
+3. ~~SA FHB established concession~~ — FIXED
+4. ~~VIC PPR rate logic~~ — FIXED
+5. ~~NSW bracket update~~ — FIXED
+6. ~~WA complete overhaul~~ — FIXED
+7. ~~TAS FHB established exemption~~ — FIXED
+8. ~~ACT bracket update~~ — FIXED
+9. ~~Fee schedules~~ — FIXED

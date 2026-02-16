@@ -85,13 +85,13 @@ export const vic: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 136
+    return 122.10
   },
 
   calculateLandTransferFee(inputs: FormState): number {
-    // VIC: $111.80 + $2.34 per $1,000 of property value (max $3,621)
-    const fee = 111.80 + (inputs.propertyValue / 1000) * 2.34
-    return roundCurrency(Math.min(fee, 3621))
+    // VIC: $98.60 + $2.34 per $1,000 of property value (max $3,621)
+    const fee = 98.60 + (inputs.propertyValue / 1000) * 2.34
+    return Math.round(Math.min(fee, 3621) * 100) / 100
   },
 
   calculateForeignSurcharge(inputs: FormState): number | null {

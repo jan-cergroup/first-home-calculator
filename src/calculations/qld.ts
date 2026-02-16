@@ -67,17 +67,17 @@ export const qld: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 238
+    return 231.98
   },
 
   calculateLandTransferFee(inputs: FormState): number {
-    // QLD: $238.14 + $44.71 per $10k over $180k
+    // QLD: $231.98 + $43.56 per $10k over $180k
     const value = inputs.propertyValue
     if (value <= 180000) {
-      return 238
+      return 231.98
     }
     const additionalUnits = Math.ceil((value - 180000) / 10000)
-    return roundCurrency(238.14 + additionalUnits * 44.71)
+    return Math.round((231.98 + additionalUnits * 43.56) * 100) / 100
   },
 
   calculateForeignSurcharge(inputs: FormState): number | null {

@@ -64,19 +64,11 @@ export const act: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 178
+    return 172
   },
 
-  calculateLandTransferFee(inputs: FormState): number {
-    // ACT: land transfer fee based on property value
-    const value = inputs.propertyValue
-    if (value <= 100000) return 279
-    if (value <= 200000) return 379
-    if (value <= 300000) return 429
-    if (value <= 500000) return 479
-    if (value <= 750000) return 479
-    if (value <= 1000000) return 579
-    return 679
+  calculateLandTransferFee(): number {
+    return 463
   },
 
   calculateForeignSurcharge(): number | null {

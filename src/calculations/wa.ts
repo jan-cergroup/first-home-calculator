@@ -53,30 +53,17 @@ export const wa: StateCalculator = {
     return { eligible: true, grantAmount: 10000, message: 'You may be eligible for a $10,000 First Home Owners Grant.*' }
   },
 
-  calculateMortgageRegistrationFee(inputs: FormState): number {
-    // WA: $174.70, + $42.60 if mortgage > $300k
-    if (inputs.propertyValue > 300000) {
-      return 217
-    }
-    return 175
+  calculateMortgageRegistrationFee(): number {
+    return 210.30
   },
 
   calculateLandTransferFee(inputs: FormState): number {
-    // WA: tiered by value
+    // WA: $210.30 base, +$10 at $100k, +$20 per $100k step from $150k
     const value = inputs.propertyValue
-    if (value <= 85000) return 175
-    if (value <= 120000) return 185
-    if (value <= 200000) return 195
-    if (value <= 300000) return 205
-    if (value <= 400000) return 225
-    if (value <= 500000) return 245
-    if (value <= 600000) return 265
-    if (value <= 700000) return 285
-    if (value <= 800000) return 305
-    if (value <= 900000) return 325
-    if (value <= 1000000) return 345
-    // Over $1M: $345 + $20 per $100k
-    return roundCurrency(345 + Math.ceil((value - 1000000) / 100000) * 20)
+    if (value < 100000) return 210.30
+    if (value < 150000) return 220.30
+    const steps = Math.floor((value - 150000) / 100000) + 1
+    return Math.round((220.30 + steps * 20) * 100) / 100
   },
 
   calculateForeignSurcharge(inputs: FormState): number | null {

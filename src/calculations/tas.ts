@@ -42,11 +42,11 @@ export const tas: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 163
+    return 159.88
   },
 
   calculateLandTransferFee(): number {
-    return 250
+    return 244.97
   },
 
   calculateForeignSurcharge(inputs: FormState): number | null {

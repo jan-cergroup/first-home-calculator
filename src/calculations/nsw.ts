@@ -66,11 +66,11 @@ export const nsw: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 175.70
+    return 171.70
   },
 
   calculateLandTransferFee(): number {
-    return 175.70
+    return 171.70
   },
 
   calculateForeignSurcharge(inputs: FormState): number | null {
