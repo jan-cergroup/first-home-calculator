@@ -33,26 +33,19 @@
 
 ---
 
-## BUG 2: VIC PPR rates applied above $550k — should use general rates
+## BUG 2: VIC PPR rates applied above $550k — should use general rates — FIXED
 
-**File:** `src/calculations/vic.ts:61-66`
-**Severity:** MEDIUM — overcharges non-FHB owner-occupiers below general rate by ~$3,100
+**File:** `src/calculations/vic.ts:34-40`
+**Severity:** MEDIUM — was undercharging non-FHB owner-occupiers by ~$3,100 above $550k
+**Status:** FIXED — PPR concession now capped at $550k, general rates apply above
 
-Our code always applies PPR brackets for `propertyPurpose === 'home'`. But the PPR concession (5% rate in the $130k-$440k range vs general 6%) appears to only apply for properties up to ~$550k.
+**Verification (all pass):**
 
-**Evidence:**
-
-| Scenario | Our value (PPR) | Reference (general) | Diff |
-|----------|-----------------|---------------------|------|
-| $500k non-FHB owner-occ | $21,970 | $21,970 | OK (both match PPR) |
-| $650k non-FHB owner-occ | $30,970 | $34,070 | -$3,100 |
-| $800k FHB (above concession) | $39,970 | $43,070 | -$3,100 |
-
-The $3,100 difference is exactly the cumulative impact of using 5% vs 6% in the $130k-$440k range: `($440k - $130k) × 1% = $3,100`.
-
-At $500k (below $550k), both PPR and ref agree. Above $550k, the ref uses general rates. This suggests VIC PPR concession has a property value ceiling of approximately $550k.
-
-**Note:** This also affects FHB properties above $750k (where FHB concession doesn't apply) — they incorrectly get PPR rates instead of general rates.
+| Scenario | Our value | Reference | Diff |
+|----------|-----------|-----------|------|
+| $500k non-FHB owner-occ | $21,970 | $21,970 | $0 |
+| $650k non-FHB owner-occ | $34,070 | $34,070 | $0 |
+| $800k FHB (above concession) | $43,070 | $43,070 | $0 |
 
 ---
 
