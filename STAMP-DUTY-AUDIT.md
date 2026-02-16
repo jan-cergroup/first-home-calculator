@@ -17,28 +17,19 @@
 
 ---
 
-## BUG 1: NT stamp duty rate is 5.95% — should be 4.95%
+## BUG 1: NT stamp duty rate is 5.95% — should be 4.95% — FIXED
 
 **File:** `src/calculations/nt.ts:15`
-**Severity:** HIGH — affects every NT calculation above $525k
+**Severity:** HIGH — affected every NT calculation above $525k
+**Status:** FIXED — corrected rate from 0.0595 to 0.0495
 
-```ts
-// CURRENT (wrong):
-return roundCurrency(value * 0.0595)
-
-// CORRECT:
-return roundCurrency(value * 0.0495)
-```
-
-**Evidence:**
+**Verification (all pass):**
 
 | Scenario | Our value | Reference | Diff |
 |----------|-----------|-----------|------|
-| $650k non-FHB | $38,675 | $32,175 | +$6,500 (exactly 1% of $650k) |
-| $1M non-FHB investor | $59,500 | $49,500 | +$10,000 (exactly 1% of $1M) |
-| $800k FHB | $47,600 | $39,600 | +$8,000 (exactly 1% of $800k) |
-
-The reference values are exactly 4.95% of property value, confirming the correct rate.
+| $650k non-FHB | $32,175 | $32,175 | $0 |
+| $1M non-FHB investor | $49,500 | $49,500 | $0 |
+| $800k FHB | $39,600 | $39,600 | $0 |
 
 ---
 
