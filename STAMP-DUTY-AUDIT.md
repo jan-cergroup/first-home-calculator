@@ -89,23 +89,30 @@ At $500k (below $550k), both PPR and ref agree. Above $550k, the ref uses genera
 
 ---
 
-## BUG 4: WA stamp duty brackets are wrong (known issue)
+## BUG 4: WA stamp duty brackets are wrong (known issue) — FIXED
 
-**File:** `src/calculations/wa.ts:14-20`
-**Severity:** HIGH — affects all WA calculations
+**File:** `src/calculations/wa.ts`
+**Severity:** HIGH — affected all WA calculations
+**Status:** FIXED — complete overhaul of brackets and FHB concession
 
-Already documented as a known issue. The comparison confirms:
+**Root cause:** Three issues:
+1. Bracket boundaries and rates were from prior schedule
+2. Residential and general rates have been unified in WA (no longer separate)
+3. FHB concession thresholds were wrong ($430k/$530k → $450k/$600k) and formula was incorrect
+
+**Fix:** Unified bracket table (1.9%, 2.85%, 3.8%, 4.75%, 5.15% with boundaries at $120k, $150k, $360k, $725k). FHB concession uses sliding scale formula: `fullDuty - dutyAt450k × (600k - value) / 150k`.
+
+**Verification (all pass):**
 
 | Scenario | Our value | Reference | Diff |
 |----------|-----------|-----------|------|
-| $500k FHB | $12,828 | $7,505 | +$5,323 |
-| $500k non-FHB owner-occ | $18,325 | $17,765 | +$560 |
-| $650k non-FHB owner-occ | $26,050 | $24,890 | +$1,160 |
-| $1M investor | $45,415 | $42,616 | +$2,800 |
-
-WA needs:
-1. **First Home Owner Rate of Duty** brackets (separate from residential) — explains the $5,323 diff at $500k FHB
-2. Updated residential brackets — our rates produce $560+ too much even for non-FHB
+| $500k FHB | $7,505 | $7,505 | $0 |
+| $460k FHB | $1,501 | $1,501 | $0 |
+| $530k FHB | $12,008 | $12,008 | $0 |
+| $600k FHB | $22,515 | $22,515 | $0 |
+| $500k non-FHB | $17,765 | $17,765 | $0 |
+| $650k non-FHB | $24,890 | $24,890 | $0 |
+| $1M investor | $42,616 | $42,616 | $0 |
 
 ---
 

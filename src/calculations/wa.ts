@@ -1,46 +1,38 @@
 import type { FormState, FHOGResult, StampDutyBracket, StampDutyConcessionResult, StateCalculator } from '../types'
 import { calculateFromBrackets, roundCurrency } from './utils'
 
-// WA general (non-residential) stamp duty brackets
+// WA stamp duty brackets (2025-26 — residential and general rates now unified)
 const generalBrackets: StampDutyBracket[] = [
-  { min: 0, max: 80000, base: 0, rate: 0.019 },
-  { min: 80001, max: 100000, base: 1520, rate: 0.0285 },
-  { min: 100001, max: 250000, base: 2090, rate: 0.038 },
-  { min: 250001, max: 500000, base: 7790, rate: 0.0475 },
-  { min: 500001, max: Infinity, base: 19665, rate: 0.0515 },
-]
-
-// WA residential rates (different brackets for owner-occupied residential)
-const residentialBrackets: StampDutyBracket[] = [
   { min: 0, max: 120000, base: 0, rate: 0.019 },
   { min: 120001, max: 150000, base: 2280, rate: 0.0285 },
   { min: 150001, max: 360000, base: 3135, rate: 0.038 },
-  { min: 360001, max: 725000, base: 11115, rate: 0.0515 },
-  { min: 725001, max: Infinity, base: 29910, rate: 0.0515 },
+  { min: 360001, max: 725000, base: 11115, rate: 0.0475 },
+  { min: 725001, max: Infinity, base: 28454, rate: 0.0515 },
 ]
+
+function calculateFullStampDuty(value: number): number {
+  return roundCurrency(calculateFromBrackets(value, generalBrackets))
+}
 
 export const wa: StateCalculator = {
   calculateStampDuty(inputs: FormState): number {
     const value = inputs.propertyValue
 
-    // WA FHB: exempt up to $430k, sliding $430k-$530k
+    // WA FHB: exempt up to $450k, sliding scale $450k–$600k
+    // Formula: FHB duty = fullDuty - dutyAt450k × (600k - value) / 150k
     if (inputs.isFirstHomeBuyer && inputs.propertyPurpose === 'home') {
-      if (value <= 430000) {
+      if (value <= 450000) {
         return 0
       }
-      if (value <= 530000) {
-        const fullDuty = roundCurrency(calculateFromBrackets(value, residentialBrackets))
-        const concessionRate = (530000 - value) / 100000
-        return roundCurrency(fullDuty * (1 - concessionRate))
+      if (value <= 600000) {
+        const fullDuty = calculateFullStampDuty(value)
+        const exemptDuty = calculateFullStampDuty(450000)
+        const slidingFactor = (600000 - value) / 150000
+        return roundCurrency(fullDuty - exemptDuty * slidingFactor)
       }
     }
 
-    // Residential rates for owner-occupied
-    if (inputs.propertyPurpose === 'home') {
-      return roundCurrency(calculateFromBrackets(value, residentialBrackets))
-    }
-
-    return roundCurrency(calculateFromBrackets(value, generalBrackets))
+    return calculateFullStampDuty(value)
   },
 
   calculateFHOG(inputs: FormState): FHOGResult {
@@ -95,25 +87,25 @@ export const wa: StateCalculator = {
   },
 
   getStampDutyConcessionInfo(inputs: FormState): StampDutyConcessionResult {
-    // WA concessions not yet fully implemented per CLAUDE.md
     if (!inputs.isFirstHomeBuyer || inputs.propertyPurpose !== 'home') {
       return { status: 'fullRate', savings: 0, description: 'No stamp duty concession applies' }
     }
 
     const value = inputs.propertyValue
-    const fullDuty = roundCurrency(calculateFromBrackets(value, residentialBrackets))
+    const fullDuty = calculateFullStampDuty(value)
 
-    if (value <= 430000) {
-      return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for properties up to $430k' }
+    if (value <= 450000) {
+      return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for properties up to $450k' }
     }
 
-    if (value <= 530000) {
-      const concessionRate = (530000 - value) / 100000
-      const actualDuty = roundCurrency(fullDuty * (1 - concessionRate))
+    if (value <= 600000) {
+      const exemptDuty = calculateFullStampDuty(450000)
+      const slidingFactor = (600000 - value) / 150000
+      const actualDuty = roundCurrency(fullDuty - exemptDuty * slidingFactor)
       return {
         status: 'concession',
         savings: fullDuty - actualDuty,
-        description: 'FHB: Sliding scale concession ($430k–$530k)',
+        description: 'FHB: Sliding scale concession ($450k–$600k)',
       }
     }
 
