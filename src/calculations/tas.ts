@@ -20,8 +20,9 @@ export const tas: StateCalculator = {
   calculateStampDuty(inputs: FormState): number {
     const value = inputs.propertyValue
 
-    // TAS FHB stamp duty exemption: full exemption for established homes (no value cap)
-    if (inputs.isFirstHomeBuyer && inputs.propertyPurpose === 'home' && inputs.propertyType === 'established') {
+    // TAS FHB stamp duty exemption: full exemption up to $750k (all property types)
+    // Hard cliff — no concession above $750k. Expires 30 June 2026.
+    if (inputs.isFirstHomeBuyer && inputs.propertyPurpose === 'home' && value <= 750000) {
       return 0
     }
 
@@ -42,11 +43,11 @@ export const tas: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 159.88
+    return 163.30
   },
 
   calculateLandTransferFee(): number {
-    return 244.97
+    return 250.21
   },
 
   calculateForeignSurcharge(inputs: FormState): number | null {
@@ -61,13 +62,12 @@ export const tas: StateCalculator = {
       return { status: 'fullRate', savings: 0, description: 'No stamp duty concession applies' }
     }
 
-    // TAS FHB: full stamp duty exemption for established homes (no value cap)
-    if (inputs.propertyType === 'established') {
+    // TAS FHB: full stamp duty exemption up to $750k (all property types), hard cliff above
+    if (inputs.propertyValue <= 750000) {
       const fullDuty = calculateFullStampDuty(inputs.propertyValue)
-      return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for established homes' }
+      return { status: 'exempt', savings: fullDuty, description: 'FHB: Full stamp duty exemption for properties up to $750k' }
     }
 
-    // For new/vacant land — no stamp duty concession in TAS (FHOG applies instead)
-    return { status: 'fullRate', savings: 0, description: 'No stamp duty concession for this property type' }
+    return { status: 'fullRate', savings: 0, description: 'Property value exceeds $750k FHB exemption threshold' }
   },
 }

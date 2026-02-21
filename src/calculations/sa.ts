@@ -47,18 +47,18 @@ export const sa: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 192
+    return 198
   },
 
   calculateLandTransferFee(inputs: FormState): number {
-    // SA: tiered below $50k, formula above
+    // SA transfer registration fees (Real Property (Fees) Notice 2025, from 1 July 2025)
     const value = inputs.propertyValue
-    if (value <= 5000) return 192
-    if (value <= 20000) return 215
-    if (value <= 40000) return 236
-    if (value <= 50000) return 332
-    // Above $50k: $9.90 per $1,000 of value minus $163
-    return Math.round(((value / 1000) * 9.90 - 163) * 100) / 100
+    if (value <= 5000) return 198
+    if (value <= 20000) return 221
+    if (value <= 40000) return 243
+    if (value <= 50000) return 342
+    // Above $50k: $342 + $102 per $10,000 (or part thereof) above $50,000
+    return 342 + Math.ceil((value - 50000) / 10000) * 102
   },
 
   calculateForeignSurcharge(inputs: FormState): number | null {

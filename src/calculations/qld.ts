@@ -19,11 +19,11 @@ const homeConcessionBrackets: StampDutyBracket[] = [
 ]
 
 // QLD FHB established home concession — fixed dollar amount, stepped phase-out
-// Decreases by $1,735 per $10k step above $710k, reaching $0 at $800k
+// Full exemption up to $700k, decreases by $1,735 per $10k step above $700k, reaching $0 at $800k
 function getFHBEstablishedConcession(value: number): number {
-  if (value < 710000) return 17350
+  if (value <= 700000) return 17350
   if (value >= 800000) return 0
-  const step = Math.floor((value - 710000) / 10000)
+  const step = Math.floor((value - 700000) / 10000)
   return Math.max(0, 17350 - (step + 1) * 1735)
 }
 
@@ -67,17 +67,17 @@ export const qld: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 231.98
+    return 238.14
   },
 
   calculateLandTransferFee(inputs: FormState): number {
-    // QLD: $231.98 + $43.56 per $10k over $180k
+    // QLD: $238.14 + $44.71 per $10k (or part) over $180k
     const value = inputs.propertyValue
     if (value <= 180000) {
-      return 231.98
+      return 238.14
     }
     const additionalUnits = Math.ceil((value - 180000) / 10000)
-    return Math.round((231.98 + additionalUnits * 43.56) * 100) / 100
+    return Math.round((238.14 + additionalUnits * 44.71) * 100) / 100
   },
 
   calculateForeignSurcharge(inputs: FormState): number | null {
@@ -104,14 +104,14 @@ export const qld: StateCalculator = {
     const concession = getFHBEstablishedConcession(value)
 
     if (concession >= homeDuty) {
-      return { status: 'exempt', savings: homeDuty, description: 'FHB: Full stamp duty exemption for established homes up to $710k' }
+      return { status: 'exempt', savings: homeDuty, description: 'FHB: Full stamp duty exemption for established homes up to $700k' }
     }
 
     if (concession > 0) {
       return {
         status: 'concession',
         savings: concession,
-        description: `FHB: $${concession.toLocaleString()} concession for established homes ($710k–$800k)`,
+        description: `FHB: $${concession.toLocaleString()} concession for established homes ($700k–$800k)`,
       }
     }
 

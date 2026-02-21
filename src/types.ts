@@ -132,7 +132,7 @@ export const STATE_FORM_CONFIG: Record<AustralianState, StateFormConfig> = {
   SA:  { showForeignPurchaser: true, showPensioner: false, showNumberOfChildren: false, showForeignSurcharge: true },
   TAS: { showForeignPurchaser: true, showPensioner: false, showNumberOfChildren: false, showForeignSurcharge: true },
   ACT: { showForeignPurchaser: false, showPensioner: true, showNumberOfChildren: true, showForeignSurcharge: false },
-  NT:  { showForeignPurchaser: false, showPensioner: true, showNumberOfChildren: false, showForeignSurcharge: false },
+  NT:  { showForeignPurchaser: false, showPensioner: false, showNumberOfChildren: false, showForeignSurcharge: false },
 }
 
 export const DEFAULT_FORM_STATE: FormState = {

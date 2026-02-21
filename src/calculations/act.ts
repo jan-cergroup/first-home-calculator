@@ -15,11 +15,17 @@ const generalBrackets: StampDutyBracket[] = [
 // ACT residential rates now match general rates (tax reform convergence)
 const residentialBrackets = generalBrackets
 
-// ACT Home Buyer Concession Scheme (HBCS) income thresholds
-// Base income threshold: ~$170,000 for no children, increases per child
+// ACT HBCS constants (2025-26 rates — from 1 July 2025)
+const HBCS_FULL_EXEMPTION_THRESHOLD = 1_020_000
+const HBCS_SLIDING_RATE = 6.40 // per $100 above exemption threshold
+const HBCS_UPPER_RATE = 0.0454
+const HBCS_MAX_CONCESSION = 35_238
+const HBCS_SLIDING_CEILING = 1_455_000
+
+// ACT HBCS income thresholds (from 1 July 2024)
 function getHBCSIncomeThreshold(childrenCount: number): number {
-  const base = 170000
-  const perChild = 3330
+  const base = 250000
+  const perChild = 4600
   return base + childrenCount * perChild
 }
 
@@ -38,11 +44,17 @@ export const act: StateCalculator = {
   calculateStampDuty(inputs: FormState): number {
     const value = inputs.propertyValue
 
-    // ACT HBCS: full stamp duty concession for eligible first home buyers
+    // ACT HBCS: stamp duty concession for eligible first home buyers
     if (inputs.isFirstHomeBuyer && inputs.propertyPurpose === 'home') {
       const incomeThreshold = getHBCSIncomeThreshold(inputs.childrenCount)
       if (inputs.yearlyIncome <= incomeThreshold) {
-        return 0
+        if (value <= HBCS_FULL_EXEMPTION_THRESHOLD) {
+          return 0
+        }
+        if (value <= HBCS_SLIDING_CEILING) {
+          return roundCurrency((value - HBCS_FULL_EXEMPTION_THRESHOLD) / 100 * HBCS_SLIDING_RATE)
+        }
+        return roundCurrency(HBCS_UPPER_RATE * value - HBCS_MAX_CONCESSION)
       }
     }
 
@@ -81,10 +93,20 @@ export const act: StateCalculator = {
       const incomeThreshold = getHBCSIncomeThreshold(inputs.childrenCount)
       if (inputs.yearlyIncome <= incomeThreshold) {
         const fullDuty = getFullDuty(inputs)
+        if (inputs.propertyValue <= HBCS_FULL_EXEMPTION_THRESHOLD) {
+          return {
+            status: 'exempt',
+            savings: fullDuty,
+            description: `HBCS: Full stamp duty exemption (property ≤$${(HBCS_FULL_EXEMPTION_THRESHOLD / 1000).toFixed(0)}k)`,
+          }
+        }
+        const concessionalDuty = inputs.propertyValue <= HBCS_SLIDING_CEILING
+          ? roundCurrency((inputs.propertyValue - HBCS_FULL_EXEMPTION_THRESHOLD) / 100 * HBCS_SLIDING_RATE)
+          : roundCurrency(HBCS_UPPER_RATE * inputs.propertyValue - HBCS_MAX_CONCESSION)
         return {
-          status: 'exempt',
-          savings: fullDuty,
-          description: `HBCS: Full stamp duty exemption (income under $${(incomeThreshold / 1000).toFixed(0)}k threshold)`,
+          status: 'concession',
+          savings: roundCurrency(fullDuty - concessionalDuty),
+          description: `HBCS: Reduced stamp duty (property above $${(HBCS_FULL_EXEMPTION_THRESHOLD / 1000).toFixed(0)}k threshold)`,
         }
       }
     }

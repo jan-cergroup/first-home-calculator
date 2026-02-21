@@ -10,7 +10,7 @@
  * - Property purpose must be owner-occupied (home)
  * - Property value must be within state/location price cap
  * - LVR must be between 80% and 95% (deposit between 5% and 20%)
- * - Income cap: $125k single / $200k couple (not enforced here as simplified)
+ * - Income caps were removed (previously $125k single / $200k couple)
  */
 
 import type { FormState, FHDSResult } from '../types'
@@ -46,15 +46,6 @@ export function calculateFHDSEligibility(inputs: FormState): FHDSResult {
   }
   if (lvr > 95) {
     return { eligible: false, reason: 'Minimum 5% deposit required' }
-  }
-
-  // Income cap check
-  const incomeCap = inputs.buyerType === 'single' ? 125000 : 200000
-  if (inputs.yearlyIncome > incomeCap) {
-    return {
-      eligible: false,
-      reason: `Income exceeds $${(incomeCap / 1000).toFixed(0)}k cap for ${inputs.buyerType === 'single' ? 'singles' : 'couples'}`,
-    }
   }
 
   return { eligible: true, reason: 'You may be eligible for the First Home Guarantee' }
