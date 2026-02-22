@@ -1,7 +1,7 @@
 import type { FormState, FHOGResult, StampDutyBracket, StampDutyConcessionResult, StateCalculator } from '../types'
 import { calculateFromBrackets, roundCurrency } from './utils'
 
-// ACT stamp duty brackets (2025-26 schedule — rates unified across residential/commercial)
+// ACT general/investor stamp duty brackets (2025-26 schedule, from 1 July 2025)
 const generalBrackets: StampDutyBracket[] = [
   { min: 0, max: 200000, base: 0, rate: 0.012 },
   { min: 200001, max: 300000, base: 2400, rate: 0.022 },
@@ -9,11 +9,18 @@ const generalBrackets: StampDutyBracket[] = [
   { min: 500001, max: 750000, base: 11400, rate: 0.0432 },
   { min: 750001, max: 1000000, base: 22200, rate: 0.059 },
   { min: 1000001, max: 1455000, base: 36950, rate: 0.064 },
-  { min: 1455001, max: 1900000, base: 66070, rate: 0.0454 },
 ]
 
-// ACT residential rates now match general rates (tax reform convergence)
-const residentialBrackets = generalBrackets
+// ACT residential owner-occupier stamp duty brackets (2025-26 schedule, from 1 July 2025)
+// Lower first bracket ($0.28/$100) vs general ($1.20/$100)
+const residentialBrackets: StampDutyBracket[] = [
+  { min: 0, max: 260000, base: 0, rate: 0.0028 },
+  { min: 260001, max: 300000, base: 728, rate: 0.022 },
+  { min: 300001, max: 500000, base: 1608, rate: 0.034 },
+  { min: 500001, max: 750000, base: 8408, rate: 0.0432 },
+  { min: 750001, max: 1000000, base: 19208, rate: 0.059 },
+  { min: 1000001, max: 1455000, base: 33958, rate: 0.064 },
+]
 
 // ACT HBCS constants (2025-26 rates — from 1 July 2025)
 const HBCS_FULL_EXEMPTION_THRESHOLD = 1_020_000
@@ -29,15 +36,30 @@ function getHBCSIncomeThreshold(childrenCount: number): number {
   return base + childrenCount * perChild
 }
 
+// ACT: above $1,455,000, flat 4.54% on total property value (no deduction)
+// Commercial: above $2M, flat 5% on total value; up to $2M, $0
+const FLAT_RATE_THRESHOLD = 1_455_000
+const FLAT_RATE = 0.0454
+
+function calculateResidentialDuty(value: number): number {
+  if (value > FLAT_RATE_THRESHOLD) {
+    return roundCurrency(value * FLAT_RATE)
+  }
+  return roundCurrency(calculateFromBrackets(value, residentialBrackets))
+}
+
+function calculateGeneralDuty(value: number): number {
+  if (value > FLAT_RATE_THRESHOLD) {
+    return roundCurrency(value * FLAT_RATE)
+  }
+  return roundCurrency(calculateFromBrackets(value, generalBrackets))
+}
+
 function getFullDuty(inputs: FormState): number {
-  // Above $1.9M: flat 5% of total property value
-  if (inputs.propertyValue > 1900000) {
-    return roundCurrency(inputs.propertyValue * 0.05)
-  }
   if (inputs.propertyPurpose === 'home') {
-    return roundCurrency(calculateFromBrackets(inputs.propertyValue, residentialBrackets))
+    return calculateResidentialDuty(inputs.propertyValue)
   }
-  return roundCurrency(calculateFromBrackets(inputs.propertyValue, generalBrackets))
+  return calculateGeneralDuty(inputs.propertyValue)
 }
 
 export const act: StateCalculator = {
@@ -58,16 +80,22 @@ export const act: StateCalculator = {
       }
     }
 
-    // Pensioner concession
+    // Pensioner concession: same thresholds as HBCS
     if (inputs.isEligiblePensioner && inputs.propertyPurpose === 'home') {
-      return 0
+      if (value <= HBCS_FULL_EXEMPTION_THRESHOLD) {
+        return 0
+      }
+      if (value <= HBCS_SLIDING_CEILING) {
+        return roundCurrency((value - HBCS_FULL_EXEMPTION_THRESHOLD) / 100 * HBCS_SLIDING_RATE)
+      }
+      return roundCurrency(HBCS_UPPER_RATE * value - HBCS_MAX_CONCESSION)
     }
 
     if (inputs.propertyPurpose === 'home') {
-      return roundCurrency(calculateFromBrackets(value, residentialBrackets))
+      return calculateResidentialDuty(value)
     }
 
-    return roundCurrency(calculateFromBrackets(value, generalBrackets))
+    return calculateGeneralDuty(value)
   },
 
   calculateFHOG(): FHOGResult {
@@ -76,11 +104,11 @@ export const act: StateCalculator = {
   },
 
   calculateMortgageRegistrationFee(): number {
-    return 172
+    return 178
   },
 
   calculateLandTransferFee(): number {
-    return 463
+    return 479
   },
 
   calculateForeignSurcharge(): number | null {

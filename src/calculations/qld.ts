@@ -18,13 +18,12 @@ const homeConcessionBrackets: StampDutyBracket[] = [
   { min: 1000001, max: Infinity, base: 30850, rate: 0.0575 },
 ]
 
-// QLD FHB established home concession — fixed dollar amount, stepped phase-out
-// Full exemption up to $700k, decreases by $1,735 per $10k step above $700k, reaching $0 at $800k
+// QLD FHB established home concession — fixed dollar amount, linear sliding scale
+// Full exemption up to $700k, linearly decreasing to $0 at $800k
 function getFHBEstablishedConcession(value: number): number {
   if (value <= 700000) return 17350
   if (value >= 800000) return 0
-  const step = Math.floor((value - 700000) / 10000)
-  return Math.max(0, 17350 - (step + 1) * 1735)
+  return Math.round(17350 * (800000 - value) / 100000)
 }
 
 export const qld: StateCalculator = {
