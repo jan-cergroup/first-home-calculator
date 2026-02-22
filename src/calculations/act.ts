@@ -20,6 +20,7 @@ const residentialBrackets: StampDutyBracket[] = [
   { min: 500001, max: 750000, base: 8408, rate: 0.0432 },
   { min: 750001, max: 1000000, base: 19208, rate: 0.059 },
   { min: 1000001, max: 1455000, base: 33958, rate: 0.064 },
+  { min: 1455001, max: Infinity, base: 66057, rate: 0.0454 },
 ]
 
 // ACT HBCS constants (2025-26 rates — from 1 July 2025)
@@ -36,21 +37,17 @@ function getHBCSIncomeThreshold(childrenCount: number): number {
   return base + childrenCount * perChild
 }
 
-// ACT: above $1,455,000, flat 4.54% on total property value (no deduction)
-// Commercial: above $2M, flat 5% on total value; up to $2M, $0
-const FLAT_RATE_THRESHOLD = 1_455_000
-const FLAT_RATE = 0.0454
+// ACT general/investor: above $1,455,000 flat 4.54% on total value (intentional discontinuity)
+const GENERAL_FLAT_RATE_THRESHOLD = 1_455_000
+const GENERAL_FLAT_RATE = 0.0454
 
 function calculateResidentialDuty(value: number): number {
-  if (value > FLAT_RATE_THRESHOLD) {
-    return roundCurrency(value * FLAT_RATE)
-  }
   return roundCurrency(calculateFromBrackets(value, residentialBrackets))
 }
 
 function calculateGeneralDuty(value: number): number {
-  if (value > FLAT_RATE_THRESHOLD) {
-    return roundCurrency(value * FLAT_RATE)
+  if (value > GENERAL_FLAT_RATE_THRESHOLD) {
+    return roundCurrency(value * GENERAL_FLAT_RATE)
   }
   return roundCurrency(calculateFromBrackets(value, generalBrackets))
 }
