@@ -21,8 +21,6 @@ export interface FormState {
   propertyType: PropertyType
   childrenCount: ChildrenCount
   depositSavings: number
-  monthlyExpenses: number
-  hecsDebt: number
   buyerType: BuyerType
   isMetro: boolean
   interestRate: number
@@ -146,8 +144,6 @@ export const DEFAULT_FORM_STATE: FormState = {
   propertyType: 'established',
   childrenCount: 0,
   depositSavings: 65000,
-  monthlyExpenses: 2000,
-  hecsDebt: 0,
   buyerType: 'single',
   isMetro: true,
   interestRate: 6.5,

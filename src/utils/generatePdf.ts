@@ -170,7 +170,7 @@ export function generatePdf(
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(GRAY_400)
   const disclaimer = doc.splitTextToSize(
-    'This estimate is for illustrative purposes only. Stamp duty rates, FHOG amounts, and scheme eligibility are subject to change. LMI estimates are approximate. Borrowing power uses a simplified assessment — actual capacity depends on your lender\'s criteria. FHDS places are limited and subject to availability.',
+    'This estimate is for illustrative purposes only. Stamp duty rates, FHOG amounts, and scheme eligibility are subject to change. LMI estimates are approximate. FHDS places are limited and subject to availability.',
     CONTENT_WIDTH
   )
   doc.text(disclaimer, MARGIN, y)

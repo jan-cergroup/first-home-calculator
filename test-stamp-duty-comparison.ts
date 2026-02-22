@@ -100,8 +100,6 @@ const BASE: FormState = {
   propertyType: 'established',
   childrenCount: 0,
   depositSavings: 65000,
-  monthlyExpenses: 2000,
-  hecsDebt: 0,
   buyerType: 'single',
   isMetro: true,
   interestRate: 6.5,
